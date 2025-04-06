@@ -139,31 +139,52 @@ class GameController:
             print(f"Fehler im Update: {str(e)}")
             return True
 
-    def zeichne(self):
-        """Zeichnet alle Spielelemente"""
+    def render(self):
+        """Zeichnet das Spiel auf den Bildschirm"""
         try:
+            # Hintergrund zeichnen
             self.screen.fill((0, 0, 0))
+            
+            # Schlange zeichnen
             self.snake.zeichne(self.screen)
+            
+            # Apfel zeichnen
             self.apple.zeichne(self.screen)
             
-            # Score anzeigen
-            font = pygame.font.Font(None, 36)
-            score_text = font.render(f'Score: {self.score}', True, (255, 255, 255))
-            self.screen.blit(score_text, (10, 10))
+            # Spielinformationen zeichnen
+            self._draw_game_info()
             
-            if self.is_game_over:
-                game_over_text = font.render('Game Over! Press R to Restart', True, (255, 255, 255))
-                text_rect = game_over_text.get_rect(center=(300, 300))
-                self.screen.blit(game_over_text, text_rect)
-            
-            if self.is_paused:
-                pause_text = font.render('PAUSE - Press P to Continue', True, (255, 255, 255))
-                text_rect = pause_text.get_rect(center=(300, 250))
-                self.screen.blit(pause_text, text_rect)
-            
+            # Bildschirm aktualisieren
             pygame.display.flip()
+            
+            # FPS begrenzen
+            self.clock.tick(self.config['main_window']['fps'])
+            
         except Exception as e:
-            print(f"Fehler beim Zeichnen: {str(e)}")
+            print(f"Fehler beim Rendern: {str(e)}")
+    
+    def _draw_game_info(self):
+        """Zeichnet Spielinformationen wie Punktestand"""
+        # Schriftart für Text
+        font = pygame.font.SysFont('Arial', 20)
+        
+        # Punktestand anzeigen
+        score_text = font.render(f'Punkte: {self.score}', True, (255, 255, 255))
+        self.screen.blit(score_text, (10, 10))
+        
+        # Game Over Nachricht
+        if self.is_game_over:
+            game_over_font = pygame.font.SysFont('Arial', 40)
+            game_over_text = game_over_font.render('Game Over! Drücke R zum Neustarten', True, (255, 0, 0))
+            text_rect = game_over_text.get_rect(center=(self.screen.get_width()/2, self.screen.get_height()/2))
+            self.screen.blit(game_over_text, text_rect)
+        
+        # Pause Nachricht
+        if self.is_paused:
+            pause_font = pygame.font.SysFont('Arial', 40)
+            pause_text = pause_font.render('Pause', True, (255, 255, 255))
+            text_rect = pause_text.get_rect(center=(self.screen.get_width()/2, self.screen.get_height()/2))
+            self.screen.blit(pause_text, text_rect)
 
     def spiel_starten(self):
         """Hauptspielschleife"""
@@ -171,8 +192,7 @@ class GameController:
         try:
             while running:
                 running = self.update()
-                self.zeichne()
-                self.clock.tick(self.config['main_window']['fps'])
+                self.render()
         except Exception as e:
             print(f"Kritischer Fehler: {str(e)}")
         finally:
